@@ -111,7 +111,6 @@ public class Main {
                 else if (selected.equals(Delete)) {
                     try {
                         Delete();
-                        outputTextPane.setText("Done!");
                     } catch (Exception e) {
                         JOptionPane.showMessageDialog(panelMain, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                         outputTextPane.setText(e.getMessage());
@@ -191,7 +190,12 @@ public class Main {
             String[] args = new String[]{"-dk", delBy, delKeyTextField.getText().trim()};
             com.Lab7Engine.Main.deleteFile(args);
         }
-        outputTextPane.setText(os.toString());
+        if (os.toString().isEmpty()) {
+            outputTextPane.setText("Done!");
+        }
+        else {
+            outputTextPane.setText(os.toString());
+        }
     }
 
     private void Print() throws IOException, ClassNotFoundException {
