@@ -40,14 +40,16 @@ public class Main {
                 }
                 else if ( args[0].equals( "-ps" )) {
                     // Prints data file sorted by key
-                    if ( printFile( args, false )== false ) {
-                        System.exit(1);
+                    if ( printFile( args, false ) == false ) {
+//                        System.exit(1);
+                        return;
                     }
                 }
                 else if ( args[0].equals( "-psr" )) {
                     // Prints data file reverse-sorted by key
                     if ( printFile( args, true )== false ) {
-                        System.exit(1);
+//                        System.exit(1);
+                        return;
                     }
                 }
                 else if ( args[0].equals( "-d" )) {
@@ -106,31 +108,36 @@ public class Main {
 
     // input file encoding:
     private static String encoding = "utf8";
-    private static PrintStream busOut = System.out;
+    public static PrintStream busOut = System.out;
 
-    static Bus readBus(Scanner fin ) throws IOException {
+    public static void setOut(OutputStream out)
+    {
+        System.setOut(new java.io.PrintStream(out));
+    }
+
+    public static Bus readBus(Scanner fin ) throws IOException {
         return Bus.nextRead( fin, busOut)
                 ? Bus.read( fin, busOut) : null;
     }
 
-    private static void deleteBackup() {
+    public static void deleteBackup() {
         new File( filenameBak ).delete();
         new File( idxnameBak ).delete();
     }
 
-    static void deleteFile() {
+    public static void deleteFile() {
         deleteBackup();
         new File( filename ).delete();
         new File( idxname ).delete();
     }
 
-    private static void backup() {
+    public static void backup() {
         deleteBackup();
         new File( filename ).renameTo( new File( filenameBak ));
         new File( idxname ).renameTo( new File( idxnameBak ));
     }
 
-    static boolean deleteFile( String[] args )
+    public static boolean deleteFile( String[] args )
             throws ClassNotFoundException, IOException, KeyNotUniqueException {
         //-dk  {i|a|n} key      - clear data by key
         if ( args.length != 3 ) {
@@ -168,7 +175,7 @@ public class Main {
         return true;
     }
 
-    static void appendFile( String[] args, Boolean zipped )
+    public static void appendFile( String[] args, Boolean zipped )
             throws FileNotFoundException, IOException, ClassNotFoundException,
             KeyNotUniqueException {
         if ( args.length >= 2 ) {
@@ -183,7 +190,7 @@ public class Main {
         appendFile( zipped );
     }
 
-    static void appendFile( Boolean zipped )
+    public static void appendFile( Boolean zipped )
             throws FileNotFoundException, IOException, ClassNotFoundException,
             KeyNotUniqueException {
         Scanner fin = new Scanner( System.in, encoding );
@@ -201,7 +208,7 @@ public class Main {
         }
     }
 
-    private static void printRecord( RandomAccessFile raf, long pos )
+    public static void printRecord( RandomAccessFile raf, long pos )
             throws ClassNotFoundException, IOException {
         boolean[] wasZipped = new boolean[] {false};
         Bus bus = (Bus) Buffer.readObject( raf, pos, wasZipped );
@@ -212,7 +219,7 @@ public class Main {
         System.out.println();
     }
 
-    private static void printRecord( RandomAccessFile raf, String key,
+    public static void printRecord( RandomAccessFile raf, String key,
                                      IndexBase pidx ) throws ClassNotFoundException, IOException {
         Long[] poss = pidx.get( key );
         for ( long pos : poss ) {
@@ -221,7 +228,7 @@ public class Main {
         }
     }
 
-    static void printFile()
+    public static void printFile()
             throws FileNotFoundException, IOException, ClassNotFoundException {
         long pos;
         int rec = 0;
@@ -234,7 +241,7 @@ public class Main {
         }
     }
 
-    private static IndexBase indexByArg( String arg, Index idx ) {
+    public static IndexBase indexByArg( String arg, Index idx ) {
         IndexBase pidx = null;
         if ( arg.equals("b")) {
             pidx = idx.busNums;
@@ -251,7 +258,7 @@ public class Main {
         return pidx;
     }
 
-    static boolean printFile( String[] args, boolean reverse )
+    public static boolean printFile( String[] args, boolean reverse )
             throws ClassNotFoundException, IOException {
         if ( args.length != 2 ) {
             System.err.println( "Invalid number of arguments" );
@@ -272,7 +279,7 @@ public class Main {
         return true;
     }
 
-    static boolean findByKey( String[] args )
+    public static boolean findByKey( String[] args )
             throws ClassNotFoundException, IOException {
         if ( args.length != 3 ) {
             System.err.println( "Invalid number of arguments" );
@@ -290,7 +297,7 @@ public class Main {
         return true;
     }
 
-    static boolean findByKey( String[] args, Comparator<String> comp )
+    public static boolean findByKey( String[] args, Comparator<String> comp )
             throws ClassNotFoundException, IOException {
         if ( args.length != 3 ) {
             System.err.println( "Invalid number of arguments" );
