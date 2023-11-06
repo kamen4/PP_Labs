@@ -1,18 +1,20 @@
+package com.kamen;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import com.Lab7Engine.*;
 
 public class Main {
 
     private JPanel panelMain;
     private JTextField textField1;
     private JButton button1;
-
     public Main() {
         button1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                JOptionPane.showMessageDialog(panelMain, textField1.getText());
+                com.Lab7Engine.Main.main(textField1.getText().split(" "));
             }
         });
     }

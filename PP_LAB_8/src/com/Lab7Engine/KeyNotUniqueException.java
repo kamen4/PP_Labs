@@ -1,4 +1,4 @@
-package com.company;
+package com.Lab7Engine;
 
 public class KeyNotUniqueException extends Exception {
     // class release version:

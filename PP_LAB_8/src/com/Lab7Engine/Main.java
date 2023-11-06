@@ -1,4 +1,4 @@
-package com.company;
+package com.Lab7Engine;
 
 import java.io.*;
 import java.util.*;
@@ -84,7 +84,7 @@ public class Main {
                 }
                 else {
                     System.err.println( "Option is not realised: " + args[0] );
-                    System.exit(1);
+                    //System.exit(1);
                 }
             }
             else {
@@ -93,10 +93,10 @@ public class Main {
         }
         catch ( Exception e ) {
             System.err.println( "Run/time error: " + e );
-            System.exit(1);
+            //System.exit(1);
         }
         System.err.println( "Main finished..." );
-        System.exit(0);
+        //System.exit(0);
     }
 
     static final String filename    = "Buses.dat";

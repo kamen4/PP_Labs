@@ -1,4 +1,4 @@
-package com.company;
+package com.Lab7Engine;
 
 import java.io.*;
 import java.util.zip.*;
