@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 
 public class Main {
     static final String Append = "Append";
@@ -56,12 +55,12 @@ public class Main {
 
     //find
     private JPanel findPanel;
-    private JComboBox comparsionComboBox;
+    private JComboBox comparisonComboBox;
     private JComboBox findKeyComboBox;
     private JTextField findKeyTextField;
 
     public Main() {
-        //fill cmnds
+        //fill commands
         commandsComboBox.addItem(Append);
         commandsComboBox.addItem(Delete);
         commandsComboBox.addItem(Print);
@@ -90,17 +89,17 @@ public class Main {
         findKeyComboBox.addItem(Name);
         findKeyComboBox.addItem(BusNumber);
         findKeyComboBox.addItem(RouteNumber);
-        comparsionComboBox.addItem(Equal);
-        comparsionComboBox.addItem(Less);
-        comparsionComboBox.addItem(More);
+        comparisonComboBox.addItem(Equal);
+        comparisonComboBox.addItem(Less);
+        comparisonComboBox.addItem(More);
 
         //listeners
         buttonExec.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 String selected = (String) commandsComboBox.getSelectedItem();
+                outputTextPane.setText("In process...");
                 if (selected.equals(Append)) {
-                    outputTextPane.setText("In process...");
                     try {
                         Append();
                         outputTextPane.setText("Done!");
@@ -110,7 +109,13 @@ public class Main {
                     }
                 }
                 else if (selected.equals(Delete)) {
-                    Delete();
+                    try {
+                        Delete();
+                        outputTextPane.setText("Done!");
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(panelMain, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        outputTextPane.setText(e.getMessage());
+                    }
                 }
                 else if (selected.equals(Print)) {
                     try {
@@ -121,7 +126,12 @@ public class Main {
                     }
                 }
                 else if (selected.equals(Find)) {
-                    Find();
+                    try {
+                        Find();
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(panelMain, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        outputTextPane.setText(e.getMessage());
+                    }
                 }
             }
         });
@@ -170,7 +180,18 @@ public class Main {
         com.Lab7Engine.Main.appendFile(args, compressCheckBox.isSelected());
     }
 
-    private void Delete() {
+    private void Delete() throws IOException, ClassNotFoundException, KeyNotUniqueException {
+        OutputStream os = new java.io.ByteArrayOutputStream();
+        com.Lab7Engine.Main.setOut(os);
+        if (!delByKeyCheckBox.isSelected()) {
+            com.Lab7Engine.Main.deleteFile();
+        }
+        else {
+            String delBy = Character.toString(((String)delKeyComboBox.getSelectedItem()).toLowerCase().charAt(0));
+            String[] args = new String[]{"-dk", delBy, delKeyTextField.getText().trim()};
+            com.Lab7Engine.Main.deleteFile(args);
+        }
+        outputTextPane.setText(os.toString());
     }
 
     private void Print() throws IOException, ClassNotFoundException {
@@ -188,7 +209,28 @@ public class Main {
         outputTextPane.setText(os.toString());
     }
 
-    private void Find() {
+    private void Find() throws IOException, ClassNotFoundException {
+        OutputStream os = new java.io.ByteArrayOutputStream();
+        com.Lab7Engine.Main.setOut(os);
+
+        String selectedComp = (String)comparisonComboBox.getSelectedItem();
+
+        String findBy = Character.toString(((String)findKeyComboBox.getSelectedItem()).toLowerCase().charAt(0));
+        String[] args = new String[]{"-f", findBy, findKeyTextField.getText()};
+
+        if (selectedComp.equals(Equal))
+        {
+            com.Lab7Engine.Main.findByKey(args);
+        }
+        else if (selectedComp.equals(More))
+        {
+            com.Lab7Engine.Main.findByKey(args, new com.Lab7Engine.KeyCompReverse());
+        }
+        else {
+            com.Lab7Engine.Main.findByKey(args, new com.Lab7Engine.KeyComp());
+        }
+
+        outputTextPane.setText(os.toString());
     }
 
     public static void main(String[] args) {

@@ -40,14 +40,14 @@ public class Main {
                 }
                 else if ( args[0].equals( "-ps" )) {
                     // Prints data file sorted by key
-                    if ( printFile( args, false ) == false ) {
+                    if (!printFile(args, false)) {
 //                        System.exit(1);
                         return;
                     }
                 }
                 else if ( args[0].equals( "-psr" )) {
                     // Prints data file reverse-sorted by key
-                    if ( printFile( args, true )== false ) {
+                    if (!printFile(args, true)) {
 //                        System.exit(1);
                         return;
                     }
@@ -56,32 +56,35 @@ public class Main {
                     // delete files
                     if ( args.length != 1 ) {
                         System.err.println("Invalid number of arguments");
-                        System.exit(1);;
+                        System.exit(1);
                     }
                     deleteFile();
                 }
                 else if ( args[0].equals( "-dk" )) {
                     // Delete records by key
-                    if ( deleteFile( args )== false ) {
+                    if (!deleteFile(args)) {
                         System.exit(1);
                     }
                 }
                 else if ( args[0].equals( "-f" )) {
                     // Find record(s) by key
-                    if ( findByKey( args )== false ) {
-                        System.exit(1);
+                    if (!findByKey(args)) {
+//                        System.exit(1);
+                        return;
                     }
                 }
                 else if ( args[0].equals( "-fr" )) {
                     // Find record(s) by key large then key
-                    if ( findByKey( args, new KeyCompReverse() )== false ) {
-                        System.exit(1);
+                    if (!findByKey(args, new KeyCompReverse())) {
+//                        System.exit(1);
+                        return;
                     }
                 }
                 else if ( args[0].equals( "-fl" )) {
-                    // Find record(s) by key less then key
-                    if ( findByKey( args, new KeyComp() )== false ) {
-                        System.exit(1);
+                    // Find record(s) by key less than key
+                    if (!findByKey(args, new KeyComp())) {
+//                        System.exit(1);
+                        return;
                     }
                 }
                 else {
@@ -103,8 +106,8 @@ public class Main {
 
     static final String filename    = "Buses.dat";
     static final String filenameBak = "Buses.~dat";
-    static final String idxname     = "Buses.idx";
-    static final String idxnameBak  = "Buses.~idx";
+    static final String idxName = "Buses.idx";
+    static final String idxNameBak = "Buses.~idx";
 
     // input file encoding:
     private static String encoding = "utf8";
@@ -122,19 +125,19 @@ public class Main {
 
     public static void deleteBackup() {
         new File( filenameBak ).delete();
-        new File( idxnameBak ).delete();
+        new File(idxNameBak).delete();
     }
 
     public static void deleteFile() {
         deleteBackup();
         new File( filename ).delete();
-        new File( idxname ).delete();
+        new File(idxName).delete();
     }
 
     public static void backup() {
         deleteBackup();
         new File( filename ).renameTo( new File( filenameBak ));
-        new File( idxname ).renameTo( new File( idxnameBak ));
+        new File(idxName).renameTo( new File(idxNameBak));
     }
 
     public static boolean deleteFile( String[] args )
@@ -144,23 +147,23 @@ public class Main {
             System.err.println( "Invalid number of arguments" );
             return false;
         }
-        Long[] poss = null;
-        try ( Index idx = Index.load( idxname )) {
-            IndexBase pidx = indexByArg( args[1], idx );
-            if ( pidx == null ) {
+        Long[] poss;
+        try ( Index idx = Index.load(idxName)) {
+            IndexBase pIdx = indexByArg( args[1], idx );
+            if ( pIdx == null ) {
                 return false;
             }
-            if ( pidx.contains(args[2])== false ) {
-                System.err.println( "Key not found: " + args[2] );
+            if (!pIdx.contains(args[2])) {
+                System.out.println( "Key not found: " + args[2] );
                 return false;
             }
-            poss = pidx.get(args[2]);
+            poss = pIdx.get(args[2]);
         }
         backup();
         Arrays.sort( poss );
-        try ( Index idx = Index.load( idxname );
-              RandomAccessFile fileBak= new RandomAccessFile(filenameBak, "rw");
-              RandomAccessFile file = new RandomAccessFile( filename, "rw")) {
+        try (Index idx = Index.load(idxName);
+             RandomAccessFile fileBak= new RandomAccessFile(filenameBak, "rw");
+             RandomAccessFile file = new RandomAccessFile( filename, "rw")) {
             boolean[] wasZipped = new boolean[] {false};
             long pos;
             while (( pos = fileBak.getFilePointer()) < fileBak.length() ) {
@@ -176,7 +179,7 @@ public class Main {
     }
 
     public static void appendFile( String[] args, Boolean zipped )
-            throws FileNotFoundException, IOException, ClassNotFoundException,
+            throws IOException, ClassNotFoundException,
             KeyNotUniqueException {
         if ( args.length >= 2 ) {
             FileInputStream stdin = new FileInputStream( args[1] );
@@ -191,12 +194,12 @@ public class Main {
     }
 
     public static void appendFile( Boolean zipped )
-            throws FileNotFoundException, IOException, ClassNotFoundException,
+            throws IOException, ClassNotFoundException,
             KeyNotUniqueException {
         Scanner fin = new Scanner( System.in, encoding );
         busOut.println( "Enter bus data: " );
-        try ( Index idx = Index.load( idxname );
-              RandomAccessFile raf = new RandomAccessFile( filename, "rw" )) {
+        try (Index idx = Index.load(idxName);
+             RandomAccessFile raf = new RandomAccessFile( filename, "rw" )) {
             for(;;) {
                 Bus bus = readBus( fin );
                 if ( bus == null )
@@ -212,7 +215,7 @@ public class Main {
             throws ClassNotFoundException, IOException {
         boolean[] wasZipped = new boolean[] {false};
         Bus bus = (Bus) Buffer.readObject( raf, pos, wasZipped );
-        if ( wasZipped[0] == true ) {
+        if (wasZipped[0]) {
             System.out.print( " compressed" );
         }
         System.out.println( " record at position "+ pos + ": \n" + bus );
@@ -220,8 +223,8 @@ public class Main {
     }
 
     public static void printRecord( RandomAccessFile raf, String key,
-                                     IndexBase pidx ) throws ClassNotFoundException, IOException {
-        Long[] poss = pidx.get( key );
+                                     IndexBase pIdx ) throws ClassNotFoundException, IOException {
+        Long[] poss = pIdx.get( key );
         for ( long pos : poss ) {
             System.out.print( "*** Key: " +  key + " points to" );
             printRecord( raf, pos );
@@ -229,7 +232,7 @@ public class Main {
     }
 
     public static void printFile()
-            throws FileNotFoundException, IOException, ClassNotFoundException {
+            throws IOException, ClassNotFoundException {
         long pos;
         int rec = 0;
         try ( RandomAccessFile raf = new RandomAccessFile( filename, "rw" )) {
@@ -242,20 +245,20 @@ public class Main {
     }
 
     public static IndexBase indexByArg( String arg, Index idx ) {
-        IndexBase pidx = null;
+        IndexBase pIdx = null;
         if ( arg.equals("b")) {
-            pidx = idx.busNums;
+            pIdx = idx.busNums;
         }
         else if ( arg.equals("r")) {
-            pidx = idx.routeNums;
+            pIdx = idx.routeNums;
         }
         else if ( arg.equals("n")) {
-            pidx = idx.names;
+            pIdx = idx.names;
         }
         else {
             System.err.println( "Invalid index specified: " + arg );
         }
-        return pidx;
+        return pIdx;
     }
 
     public static boolean printFile( String[] args, boolean reverse )
@@ -264,16 +267,16 @@ public class Main {
             System.err.println( "Invalid number of arguments" );
             return false;
         }
-        try ( Index idx = Index.load( idxname );
-              RandomAccessFile raf = new RandomAccessFile( filename, "rw" )) {
-            IndexBase pidx = indexByArg( args[1], idx );
-            if ( pidx == null ) {
+        try (Index idx = Index.load(idxName);
+             RandomAccessFile raf = new RandomAccessFile( filename, "rw" )) {
+            IndexBase pIdx = indexByArg( args[1], idx );
+            if ( pIdx == null ) {
                 return false;
             }
             String[] keys =
-                    pidx.getKeys( reverse ? new KeyCompReverse() : new KeyComp() );
+                    pIdx.getKeys( reverse ? new KeyCompReverse() : new KeyComp() );
             for ( String key : keys ) {
-                printRecord( raf, key, pidx );
+                printRecord( raf, key, pIdx );
             }
         }
         return true;
@@ -285,14 +288,14 @@ public class Main {
             System.err.println( "Invalid number of arguments" );
             return false;
         }
-        try ( Index idx = Index.load( idxname );
-              RandomAccessFile raf = new RandomAccessFile( filename, "rw" )) {
-            IndexBase pidx = indexByArg( args[1], idx );
-            if ( pidx.contains(args[2])== false ) {
-                System.err.println( "Key not found: " + args[2] );
+        try (Index idx = Index.load(idxName);
+             RandomAccessFile raf = new RandomAccessFile( filename, "rw" )) {
+            IndexBase pIdx = indexByArg( args[1], idx );
+            if (!pIdx.contains(args[2])) {
+                System.out.println( "Key not found: " + args[2] );
                 return false;
             }
-            printRecord( raf, args[2], pidx );
+            printRecord( raf, args[2], pIdx );
         }
         return true;
     }
@@ -303,20 +306,19 @@ public class Main {
             System.err.println( "Invalid number of arguments" );
             return false;
         }
-        try ( Index idx = Index.load( idxname );
-              RandomAccessFile raf = new RandomAccessFile( filename, "rw" )) {
-            IndexBase pidx = indexByArg( args[1], idx );
-            if ( pidx.contains(args[2])== false ) {
-                System.err.println( "Key not found: " + args[2] );
+        try (Index idx = Index.load(idxName);
+             RandomAccessFile raf = new RandomAccessFile( filename, "rw" )) {
+            IndexBase pIdx = indexByArg( args[1], idx );
+            if (!pIdx.contains(args[2])) {
+                System.out.println( "Key not found: " + args[2] );
                 return false;
             }
-            String[] keys = pidx.getKeys( comp );
-            for ( int i = 0; i < keys.length; i++ ) {
-                String key = keys[i];
-                if ( key.equals( args[2] )) {
+            String[] keys = pIdx.getKeys( comp );
+            for (String key : keys) {
+                if (key.equals(args[2])) {
                     break;
                 }
-                printRecord( raf, key, pidx );
+                printRecord(raf, key, pIdx);
             }
         }
         return true;

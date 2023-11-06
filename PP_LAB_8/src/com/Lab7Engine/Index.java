@@ -4,20 +4,6 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
-class KeyComp implements Comparator<String> {
-    public int compare(String o1, String o2) {
-        // right order:
-        return o1.compareTo(o2);
-    }
-}
-
-class KeyCompReverse implements Comparator<String> {
-    public int compare(String o1, String o2) {
-        // reverse order:
-        return o2.compareTo(o1);
-    }
-}
-
 interface IndexBase {
     String[] getKeys(Comparator<String> comp);
 
