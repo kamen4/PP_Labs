@@ -89,7 +89,11 @@ public class ServerMain {
     }
     public static ServerThread registerUser( String userName, ServerThread user ) {
         synchronized (ServerMain.syncUsers) {
-            return ServerMain.users.putIfAbsent(userName, user);
+            ServerThread old = ServerMain.users.get( userName );
+            if ( old == null ) {
+                ServerMain.users.put( userName, user );
+            }
+            return old;
         }
     }
     public static void setUser(String userName, ServerThread user ) {
@@ -181,17 +185,19 @@ class ServerThread extends Thread {
             }
         } catch (IOException e) {
             System.err.println("Disconnect...");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             disconnect();
         }
     }
 
-    boolean connect( MessageConnect msg ) throws IOException {
+    boolean connect( MessageConnect msg ) throws IOException, InterruptedException {
         ServerThread old = register( msg.userName );
         if ( old == null )
         {
             os.writeObject(new MessageConnectResult());
-            letter(new MessageLetter(msg.userName + " connected", "server"));
+            letter(new MessageLetter("\"" + msg.userName + "\" connected :", "\t\t"));
             return true;
         } else {
             os.writeObject(new MessageConnectResult("User " + old.userName + " already connected" ));
@@ -199,13 +205,17 @@ class ServerThread extends Thread {
         }
     }
 
-    void letter( MessageLetter msg ) throws IOException {
+    void letter( MessageLetter msg ) throws IOException, InterruptedException {
         for (String name : ServerMain.getUsers())
         {
             if (msg.senderName.equals(name))
                 continue;
-            ServerMain.getUser(name).os.writeObject(new MessageLetter(msg.txt, msg.senderName));
-            System.out.println("Sended to ("+ name +"): " + msg.senderName + ": " + msg.txt);
+            var user = ServerMain.getUser(name);
+            if (user.sock.isConnected() && user.isAlive()) {
+                user.os.writeObject(new MessageLetter(msg.txt, msg.senderName));
+                System.out.println("Sent to (" + name + "): " + msg.senderName + ": " + msg.txt);
+                Thread.sleep(1000);
+            }
         }
     }
 
@@ -214,14 +224,13 @@ class ServerThread extends Thread {
         if ( !disconnected )
             try {
                 if (userName != null)
-                    letter(new MessageLetter(userName + " disconnected", "server"));
+                    letter(new MessageLetter("\"" + userName + "\"  disconnected :", "\t\t"));
                 System.err.println( addr.getHostName() + " disconnected" );
                 unregister();
                 os.close();
                 is.close();
                 sock.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException | InterruptedException e) {
             } finally {
                 this.interrupt();
                 disconnected = true;

@@ -78,8 +78,8 @@ public class ClientMain {
         os.writeObject(new MessageConnect(ses.userName));
         MessageConnectResult msg = (MessageConnectResult) is.readObject();
         if (!msg.Error()) {
-            System.out.println("connected");
-            System.out.println("type /q or /quit to disconnect");
+            System.err.println("connected");
+            System.err.println("type /q or /quit to disconnect");
             ses.connected = true;
             return true;
         }
@@ -89,8 +89,10 @@ public class ClientMain {
             in.nextLine();
         return false;
     }
-    static void closeSession(Session ses, ObjectOutputStream os) throws IOException {
+    static void closeSession(Session ses, ObjectOutputStream os) throws IOException, InterruptedException {
         if ( ses.connected ) {
+            System.err.println("Disconnecting...");
+            Thread.sleep(1500);
             ses.connected = false;
             os.writeObject(new MessageDisconnect());
         }
